@@ -70,7 +70,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.example.language.QuickstartSample</mainClass>
+              <mainClass>com.example.language.QuickstartSample1</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
@@ -103,7 +103,7 @@
               </execution>
             </executions>
             <configuration>
-              <mainClass>com.example.speech.QuickstartSample</mainClass>
+              <mainClass>com.example.speech.JavaSoundRecorder</mainClass>
               <cleanupDaemonThreads>false</cleanupDaemonThreads>
             </configuration>
           </plugin>

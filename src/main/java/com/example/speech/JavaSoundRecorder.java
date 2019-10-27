@@ -1,5 +1,8 @@
+package com.example.speech;
+
 import javax.sound.sampled.*;
 import java.io.*;
+
 
 /**
  * A sample program is to demonstrate how to record sound in Java
@@ -8,9 +11,12 @@ import java.io.*;
 public class JavaSoundRecorder {
     // record duration, in milliseconds
     static final long RECORD_TIME = 10000;  // 1 minute
+    static int  status = 0;
+
+    QuickstartSample1 quickStart = new QuickstartSample1();
 
     // path of the wav file
-    File wavFile = new File("./RecordAudio.wav");
+    static File wavFile = new File("./resources/RecordAudio.raw");
 
     // format of audio file
     AudioFileFormat.Type fileType = AudioFileFormat.Type.WAVE;
@@ -90,6 +96,16 @@ public class JavaSoundRecorder {
                     ex.printStackTrace();
                 }
                 recorder.finish();
+                status = 1;
+                if(status == 1) {
+                    try {
+                        String name = wavFile.toString();
+                        System.out.println(name);
+                        QuickstartSample1.start(name);
+                    } catch(Exception f) {
+                        System.out.println("Why did this happen?");
+                    }
+                }
             }
         });
 
