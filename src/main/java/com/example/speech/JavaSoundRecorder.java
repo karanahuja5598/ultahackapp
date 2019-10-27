@@ -16,7 +16,7 @@ public class JavaSoundRecorder {
     QuickstartSample1 quickStart = new QuickstartSample1();
 
     // path of the wav file
-    static File wavFile = new File("./resources/RecordAudio.raw");
+    File wavFile = new File("./resources/RecordAudio.wav");
 
     // format of audio file
     AudioFileFormat.Type fileType = AudioFileFormat.Type.WAVE;
@@ -99,7 +99,7 @@ public class JavaSoundRecorder {
                 status = 1;
                 if(status == 1) {
                     try {
-                        String name = wavFile.toString();
+                        String name = "./resources/RecordAudio.raw";
                         System.out.println(name);
                         QuickstartSample1.start(name);
                     } catch(Exception f) {
