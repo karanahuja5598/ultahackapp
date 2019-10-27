@@ -152,12 +152,24 @@ public class JavaSoundRecorder {
 
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
-
-            if (rs!=null){
-                System.out.println("DISPLAY_NAME");
-                while(rs.next())
-                {
-                    System.out.println(rs.getString("DISPLAY_NAME"));
+            ResultSetMetaData rsmd = rs.getMetaData();
+            //System.out.println("querying SELECT * FROM XXX");
+            int columnsNumber = rsmd.getColumnCount();
+            //int columnsNumber = size;
+            if(rs != null) {
+                for (int i = 1; i <= columnsNumber; i++) {
+                    String columnValue = rsmd.getColumnName(i);
+                    if (i > 1) System.out.print("|  ");
+                    System.out.printf("%12s ", rsmd.getColumnName(i));
+                }
+                System.out.println("");
+                while (rs.next()) {
+                    for (int i = 1; i <= columnsNumber; i++) {
+                        if (i > 1) System.out.print("|  ");
+                        String columnValue = rs.getString(i);
+                        System.out.printf("%12s ", columnValue);
+                    }
+                    System.out.println("");
                 }
             }
         }
@@ -217,32 +229,21 @@ public class JavaSoundRecorder {
                             System.out.printf("%s ", temp);
 
                             if(temp.toLowerCase().compareTo("store") == 0) {
-                                String query = "select * " +
-                                        "from store_hours " +
-                                        "where city = '" +
-                                        tokens.nextToken() +
-                                        "';";
-                                runSQL(query);
+                                temp = tokens.nextToken();
+                                System.out.printf("%s ", temp);
+                                STOREcity(temp);
+                                j++;
+                                break;
+                            }
+                            if(temp.toLowerCase().compareTo("city") == 0) {
+                                temp = tokens.nextToken();
+                                System.out.printf("%s ", temp);
+                                CITYcity(temp);
                                 j++;
                                 break;
                             }
                             j++;
-
                         }
-
-
-                        /*
-                        for (int i = 0; i < recorder.help.size(); i++) {
-                            System.out.printf("Transcription: %s%n", recorder.help.get(i));
-                            if(recorder.help.get(i).toLowerCase().compareTo("store") == 0) {
-                                String query = "select * " +
-                                        "from store_hours " +
-                                        "where city = '" +
-                                        recorder.help.get(i+1) +
-                                        "';";
-                                runSQL(query);
-                            }
-                        }*/
                     } catch (Exception f) {
                         System.out.println("Why did this happen?");
                     }
@@ -254,5 +255,23 @@ public class JavaSoundRecorder {
 
         // start recording
         recorder.start();
+    }
+
+    private static void STOREcity(String city) {
+        String query = "select DISPLAY_NAME " +
+                "from store_details " +
+                "where city = '" +
+                city +
+                "';";
+        runSQL(query);
+    }
+
+    private static void CITYcity(String city) {
+        String query = "select * " +
+                "from store_details " +
+                "where city = '" +
+                city +
+                "';";
+        runSQL(query);
     }
 }
