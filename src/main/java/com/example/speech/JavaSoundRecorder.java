@@ -1,10 +1,12 @@
 package com.example.speech;
 
 import javax.sound.sampled.*;
+import javax.xml.transform.Result;
 import java.io.*;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
 
 /**
  * A sample program is to demonstrate how to record sound in Java
@@ -12,7 +14,7 @@ import java.util.ArrayList;
  */
 public class JavaSoundRecorder {
     // record duration, in milliseconds
-    static final long RECORD_TIME = 10000;  // 1 minute
+    static final long RECORD_TIME = 5000;  // 1 minute
     static int  status = 0;
 
     QuickstartSample1 quickStart = new QuickstartSample1();
@@ -93,10 +95,7 @@ public class JavaSoundRecorder {
     static final String USER = "sa";
     static final String PASS = "";
 
-    /**
-     * Entry to run the program
-     */
-    public static void main(String[] args) {
+    public static void runSQL(String query) {
         Connection conn = null;
         Statement stmt = null;
 
@@ -113,43 +112,54 @@ public class JavaSoundRecorder {
 
             ArrayList<String> initStatements = new ArrayList<String>();
             initStatements.add(
-                    "DROP TABLE IF EXISTS Store_Hours;" +
-                    "CREATE TABLE Store_Hours AS SELECT * FROM " +
-                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\1_Store_Details.csv');"
+                    "DROP TABLE IF EXISTS Store_Details;" +
+                            "CREATE TABLE Store_Hours AS SELECT * FROM " +
+                            "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\1_Store_Details.csv');"
             );
             initStatements.add(
-                    "DROP TABLE IF EXISTS Store_Details;" +
-                    "CREATE TABLE Store_Details AS SELECT * FROM " +
-                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\2_Store_Hours.csv');"
+                    "DROP TABLE IF EXISTS Store_Hours;" +
+                            "CREATE TABLE Store_Details AS SELECT * FROM " +
+                            "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\2_Store_Hours.csv');"
             );
             initStatements.add(
                     "DROP TABLE IF EXISTS Product_Catalog;" +
-                    "CREATE TABLE Product_Catalog AS SELECT * FROM " +
-                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\3_Product_Catalog.psv', null, 'charset=UTF-8 fieldSeparator=|');"
+                            "CREATE TABLE Product_Catalog AS SELECT * FROM " +
+                            "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\3_Product_Catalog.psv', null, 'charset=UTF-8 fieldSeparator=|');"
             );
             initStatements.add(
                     "DROP TABLE IF EXISTS Sku_Metadata;" +
-                    "CREATE TABLE Sku_Metadata AS SELECT * FROM " +
-                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\4_Sku_MetaData.csv');"
+                            "CREATE TABLE Sku_Metadata AS SELECT * FROM " +
+                            "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\4_Sku_MetaData.csv');"
             );
             initStatements.add(
                     "DROP TABLE IF EXISTS Store_Inventory;" +
-                    "CREATE TABLE Store_Inventory AS SELECT * FROM " +
-                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\5_Store_Inventory.csv');"
+                            "CREATE TABLE Store_Inventory AS SELECT * FROM " +
+                            "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\5_Store_Inventory.csv');"
             );
 
             boolean loadDatabase = false;
             if(loadDatabase)
-            for(int i = 0; i < initStatements.size(); i++) {
-                stmt = conn.createStatement();
-                stmt.executeUpdate(initStatements.get(i));
-            }
+                for(int i = 0; i < initStatements.size(); i++) {
+                    stmt = conn.createStatement();
+                    stmt.executeUpdate(initStatements.get(i));
+                }
 
             System.out.println("Created tables in given database...");
 
             // STEP 4: Clean-up environment
-            stmt.close();
-            conn.close();
+            //stmt.close();
+            //conn.close();
+
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            if (rs!=null){
+                System.out.println("DISPLAY_NAME");
+                while(rs.next())
+                {
+                    System.out.println(rs.getString("DISPLAY_NAME"));
+                }
+            }
         }
         catch(SQLException se) {
             //Handle errors for JDBC
@@ -175,8 +185,12 @@ public class JavaSoundRecorder {
         } //end try
 
         System.out.println("Goodbye!");
+    }
 
-
+    /**
+     * Entry to run the program
+     */
+    public static void main(String[] args) {
         final JavaSoundRecorder recorder = new JavaSoundRecorder();
 
         // creates a new thread that waits for a specified
@@ -190,78 +204,48 @@ public class JavaSoundRecorder {
                 }
                 recorder.finish();
                 status = 1;
-                if(status == 1) {
+                if (status == 1) {
                     try {
 
                         System.out.println(recorder.name);
                         recorder.help = QuickstartSample1.start(recorder.name);
-                        for(String h : recorder.help) {
-                            System.out.printf("Transcription: %s%n", h);
+                        StringTokenizer tokens = new StringTokenizer(recorder.help.get(0));
+                        int j = 0;
+                        System.out.printf("Transcription: ");
+                        while(tokens.hasMoreTokens()) {
+                            String temp = tokens.nextToken();
+                            System.out.printf("%s ", temp);
+
+                            if(temp.toLowerCase().compareTo("store") == 0) {
+                                String query = "select * " +
+                                        "from store_hours " +
+                                        "where city = '" +
+                                        tokens.nextToken() +
+                                        "';";
+                                runSQL(query);
+                                j++;
+                                break;
+                            }
+                            j++;
+
                         }
-                    } catch(Exception f) {
+
+
+                        /*
+                        for (int i = 0; i < recorder.help.size(); i++) {
+                            System.out.printf("Transcription: %s%n", recorder.help.get(i));
+                            if(recorder.help.get(i).toLowerCase().compareTo("store") == 0) {
+                                String query = "select * " +
+                                        "from store_hours " +
+                                        "where city = '" +
+                                        recorder.help.get(i+1) +
+                                        "';";
+                                runSQL(query);
+                            }
+                        }*/
+                    } catch (Exception f) {
                         System.out.println("Why did this happen?");
                     }
-                }
-
-                String city = "";
-                boolean temp = false;
-                for(int i = 0; i < recorder.help.size();i++) {
-                    if(recorder.help.get(i).toLowerCase().compareTo("store") == 0) {
-                        i++;
-                        city = recorder.help.get(i);
-                        temp = true;
-                        break;
-                    }
-                }
-
-                if(temp) {
-                    Connection conn = null;
-                    Statement stmt = null;
-                    ResultSet rs = null;
-
-                    try {
-                        // STEP 1: Register JDBC driver
-                        Class.forName(JDBC_DRIVER);
-
-                        //STEP 2: Open a connection
-                        System.out.println("Connecting to database...");
-                        conn = DriverManager.getConnection(DB_URL, USER, PASS);
-
-                        //STEP 3: Execute a query
-                        //System.out.println("");
-
-                        stmt = conn.createStatement();
-                        String sql = "select * " +
-                                "from store_hours " +
-                                "where city = '" +
-                                city + "';";
-                        stmt.executeUpdate(sql);
-
-                        //  System.out.println("Created tables in given database...");
-
-                        // STEP 4: Clean-up environment
-                        stmt.close();
-                        conn.close();
-                    } catch (SQLException se) {
-                        //Handle errors for JDBC
-                        se.printStackTrace();
-                    } catch (Exception e) {
-                        //Handle errors for Class.forName
-                        e.printStackTrace();
-                    } finally {
-                        //finally block used to close resources
-                        try {
-                            if (stmt != null) stmt.close();
-                        } catch (SQLException se2) {
-                        } // nothing we can do
-                        try {
-                            if (conn != null) conn.close();
-                        } catch (SQLException se) {
-                            se.printStackTrace();
-                        } //end finally try
-                    } //end try
-
-                    System.out.println("Goodbye!");
                 }
             }
         });
