@@ -29,6 +29,7 @@ import com.google.protobuf.ByteString;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 class QuickstartSample1 {
@@ -36,7 +37,7 @@ class QuickstartSample1 {
     /**
      * Demonstrates using the Speech API to transcribe an audio file.
      */
-    public static void start(String fileName) throws Exception {
+    public static ArrayList<String> start(String fileName) throws Exception {
         // Instantiates a client
         try (SpeechClient speechClient = SpeechClient.create()) {
 
@@ -62,12 +63,17 @@ class QuickstartSample1 {
             RecognizeResponse response = speechClient.recognize(config, audio);
             List<SpeechRecognitionResult> results = response.getResultsList();
 
+            ArrayList<String> transcribedResults = new ArrayList<String>();
+
             for (SpeechRecognitionResult result : results) {
                 // There can be several alternative transcripts for a given chunk of speech. Just use the
                 // first (most likely) one here.
                 SpeechRecognitionAlternative alternative = result.getAlternativesList().get(0);
-                System.out.printf("Transcription: %s%n", alternative.getTranscript());
+                //System.out.printf("Transcription: %s%n", alternative.getTranscript());
+                transcribedResults.add(alternative.getTranscript());
             }
+
+            return transcribedResults;
         }
     }
 }

@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 /**
  * A sample program is to demonstrate how to record sound in Java
@@ -28,6 +29,8 @@ public class JavaSoundRecorder {
 
     // the line from which audio data is captured
     TargetDataLine line;
+
+    ArrayList<String> help;
 
     /**
      * Defines an audio format
@@ -109,16 +112,43 @@ public class JavaSoundRecorder {
             conn = DriverManager.getConnection(DB_URL,USER,PASS);
 
             //STEP 3: Execute a query
-            System.out.println("Creating table in given database...");
-            stmt = conn.createStatement();
-            String sql =  "CREATE TABLE   REGISTRATION " +
-                    "(id INTEGER not NULL, " +
-                    " first VARCHAR(255), " +
-                    " last VARCHAR(255), " +
-                    " age INTEGER, " +
-                    " PRIMARY KEY ( id ))";
-            stmt.executeUpdate(sql);
-            System.out.println("Created table in given database...");
+            System.out.println("Creating tables in given database...");
+
+            ArrayList<String> initStatements = new ArrayList<String>();
+            initStatements.add(
+                    "DROP TABLE IF EXISTS Store_Hours;" +
+                    "CREATE TABLE Store_Hours AS SELECT * FROM " +
+                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\1_Store_Details.csv');"
+            );
+            initStatements.add(
+                    "DROP TABLE IF EXISTS Store_Details;" +
+                    "CREATE TABLE Store_Details AS SELECT * FROM " +
+                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\2_Store_Hours.csv');"
+            );
+            initStatements.add(
+                    "DROP TABLE IF EXISTS Product_Catalog;" +
+                    "CREATE TABLE Product_Catalog AS SELECT * FROM " +
+                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\3_Product_Catalog.psv', null, 'charset=UTF-8 fieldSeparator=|');"
+            );
+            initStatements.add(
+                    "DROP TABLE IF EXISTS Sku_Metadata;" +
+                    "CREATE TABLE Sku_Metadata AS SELECT * FROM " +
+                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\4_Sku_MetaData.csv');"
+            );
+            initStatements.add(
+                    "DROP TABLE IF EXISTS Store_Inventory;" +
+                    "CREATE TABLE Store_Inventory AS SELECT * FROM " +
+                    "CSVREAD('C:\\Users\\User\\Documents\\hackathon\\ultahackapp\\resources\\5_Store_Inventory.csv');"
+            );
+
+            boolean loadDatabase = false;
+            if(loadDatabase)
+            for(int i = 0; i < initStatements.size(); i++) {
+                stmt = conn.createStatement();
+                stmt.executeUpdate(initStatements.get(i));
+            }
+
+            System.out.println("Created tables in given database...");
 
             // STEP 4: Clean-up environment
             stmt.close();
@@ -167,10 +197,17 @@ public class JavaSoundRecorder {
                     try {
 
                         System.out.println(recorder.name);
-                        QuickstartSample1.start(recorder.name);
+                        recorder.help = QuickstartSample1.start(recorder.name);
+                        for(String h : recorder.help) {
+                            System.out.printf("Transcription: %s%n", h);
+                        }
                     } catch(Exception f) {
                         System.out.println("Why did this happen?");
                     }
+                }
+
+                for(int i = 0; i < recorder.help.size();i++)
+                    if(recorder.help.get(i) == "")
                 }
             }
         });
